@@ -16,6 +16,8 @@
 #ifndef ALEXA_CLIENT_SDK_SAMPLEAPP_INCLUDE_SAMPLEAPP_UIMANAGER_H_
 #define ALEXA_CLIENT_SDK_SAMPLEAPP_INCLUDE_SAMPLEAPP_UIMANAGER_H_
 
+#include <grpc++/grpc++.h>
+
 #include <Alerts/AlertObserverInterface.h>
 #include <AVSCommon/SDKInterfaces/AuthObserverInterface.h>
 #include <AVSCommon/SDKInterfaces/CapabilitiesObserverInterface.h>
@@ -33,6 +35,14 @@
 #include <Settings/SettingCallbacks.h>
 #include <Settings/SpeechConfirmationSettingType.h>
 #include <Settings/WakeWordConfirmationSettingType.h>
+
+#include "siana-stat.grpc.pb.h"
+
+using grpc::Channel;
+using grpc::ClientContext;
+using grpc::Status;
+using grpc::ChannelInterface;
+using grpc::InsecureChannelCredentials;
 
 namespace alexaClientSDK {
 namespace sampleApp {
@@ -293,6 +303,12 @@ public:
     void printDoNotDisturbScreen();
 
 private:
+
+    std::shared_ptr<grpc::Channel> channel;
+    std::unique_ptr<SianaStat::Stub> stub;
+
+    ClientContext * context;
+
     /**
      * Prints the current state of Alexa after checking what the appropriate message to display is based on the current
      * component states. This should only be used within the internal executor.

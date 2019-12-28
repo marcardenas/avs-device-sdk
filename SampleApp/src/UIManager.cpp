@@ -445,6 +445,9 @@ UIManager::UIManager(std::shared_ptr<avsCommon::sdkInterfaces::LocaleAssetsManag
         m_authCheckCounter{0},
         m_connectionStatus{avsCommon::sdkInterfaces::ConnectionStatusObserverInterface::Status::DISCONNECTED},
         m_localeAssetsManager{localeAssetsManager} {
+
+    channel = CreateChannel("0.0.0.0:50051", InsecureChannelCredentials());
+    stub = SianaStat::NewStub(channel);
 }
 
 static const std::string COMMS_MESSAGE =
@@ -809,6 +812,12 @@ void UIManager::onSettingNotification(
 }
 
 void UIManager::printState() {
+
+    VoiceStateRequest request;
+    VoiceStateResponse response;
+    grpc::Status status_;
+    context = new ClientContext;
+
     if (m_connectionStatus == avsCommon::sdkInterfaces::ConnectionStatusObserverInterface::Status::DISCONNECTED) {
         ConsolePrinter::prettyPrint("Client not connected!");
     } else if (m_connectionStatus == avsCommon::sdkInterfaces::ConnectionStatusObserverInterface::Status::PENDING) {
@@ -816,15 +825,32 @@ void UIManager::printState() {
     } else if (m_connectionStatus == avsCommon::sdkInterfaces::ConnectionStatusObserverInterface::Status::CONNECTED) {
         switch (m_dialogState) {
             case DialogUXState::IDLE:
+                request.set_state(VoiceAssistantState::VA_IDLE);
+                request.set_assistant(VoiceAssistant::VOICE_ASSISTANT_AVS);
+
+                status_ = stub->UpdateVoiceState(context, request, &response);
+                system("aplay /home/root/mpvoice.avs/resources/med_ui_endpointing.wav &");
+
                 ConsolePrinter::prettyPrint("Alexa is currently idle!");
                 return;
             case DialogUXState::LISTENING:
+                request.set_state(VoiceAssistantState::VA_LISTENING);
+                request.set_assistant(VoiceAssistant::VOICE_ASSISTANT_AVS);
+
+                status_ = stub->UpdateVoiceState(context, request, &response);
+                system("aplay /home/root/mpvoice.avs/resources/med_ui_wakesound.wav &");
+
                 ConsolePrinter::prettyPrint("Listening...");
                 return;
             case DialogUXState::EXPECTING:
                 ConsolePrinter::prettyPrint("Expecting...");
                 return;
             case DialogUXState::THINKING:
+                request.set_state(VoiceAssistantState::VA_PROCESSING);
+                request.set_assistant(VoiceAssistant::VOICE_ASSISTANT_AVS);
+
+                status_ = stub->UpdateVoiceState(context, request, &response);
+                
                 ConsolePrinter::prettyPrint("Thinking...");
                 return;
             case DialogUXState::SPEAKING:

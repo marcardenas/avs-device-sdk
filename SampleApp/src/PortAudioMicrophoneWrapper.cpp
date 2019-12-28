@@ -88,7 +88,7 @@ bool PortAudioMicrophoneWrapper::initialize() {
 
     PaTime suggestedLatency;
     bool latencyInConfig = getConfigSuggestedLatency(suggestedLatency);
-
+    
     if (!latencyInConfig) {
         err = Pa_OpenDefaultStream(
             &m_paStream,

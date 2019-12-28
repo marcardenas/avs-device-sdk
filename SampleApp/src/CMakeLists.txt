@@ -12,6 +12,8 @@ list(APPEND SampleApp_SOURCES
     UserInputManager.cpp
     SampleApplication.cpp
     SampleEqualizerModeController.cpp
+    siana-stat.grpc.pb.cc
+    siana-stat.pb.cc
     main.cpp)
 
 if (PORTAUDIO)
@@ -76,6 +78,8 @@ target_link_libraries(SampleApp
     SQLiteStorage
     SynchronizeStateSender
     EqualizerImplementations
+    -lprotobuf
+    -lgrpc++
     "${PORTAUDIO_LIB_PATH}")
 
 if (PCC)
