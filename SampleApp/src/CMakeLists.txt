@@ -1,6 +1,5 @@
 set(SampleApp_SOURCES)
-list(APPEND SampleApp_SOURCES
-    CaptionPresenter.cpp
+list(APPEND SampleApp_SOURCES 
     ConnectionObserver.cpp
     ConsolePrinter.cpp
     ConsoleReader.cpp
@@ -12,7 +11,10 @@ list(APPEND SampleApp_SOURCES
     UserInputManager.cpp
     SampleApplication.cpp
     SampleEqualizerModeController.cpp
-    main.cpp)
+    main.cpp
+    qtstat.grpc.pb.cc
+    qtstat.pb.cc
+    )
 
 if (PORTAUDIO)
     list(APPEND SampleApp_SOURCES PortAudioMicrophoneWrapper.cpp)
@@ -31,26 +33,6 @@ if (MCC)
     list(APPEND SampleApp_SOURCES CalendarClient.cpp)
 endif()
 
-if (ENDPOINT_CONTROLLERS_POWER_CONTROLLER OR ENDPOINT_CONTROLLERS_TOGGLE_CONTROLLER OR
-        ENDPOINT_CONTROLLERS_RANGE_CONTROLLER OR ENDPOINT_CONTROLLERS_MODE_CONTROLLER)
-    add_definitions(-DENABLE_ENDPOINT_CONTROLLERS_MENU)
-endif()
-if (ENDPOINT_CONTROLLERS_POWER_CONTROLLER)
-    list(APPEND SampleApp_SOURCES PowerControllerHandler.cpp)
-endif()
-
-if (ENDPOINT_CONTROLLERS_TOGGLE_CONTROLLER)
-    list(APPEND SampleApp_SOURCES ToggleControllerHandler.cpp)
-endif()
-
-if (ENDPOINT_CONTROLLERS_RANGE_CONTROLLER)
-    list(APPEND SampleApp_SOURCES RangeControllerHandler.cpp)
-endif()
-
-if (ENDPOINT_CONTROLLERS_MODE_CONTROLLER)
-    list(APPEND SampleApp_SOURCES ModeControllerHandler.cpp)
-endif()
-
 IF (HAS_EXTERNAL_MEDIA_PLAYER_ADAPTERS)
     file(GLOB_RECURSE SRC_FILE ${CMAKE_CURRENT_SOURCE_DIR}/ExternalMediaAdapterRegistration/*.cpp)
     foreach(myfile ${SRC_FILE})
@@ -60,8 +42,7 @@ ENDIF()
 
 add_executable(SampleApp ${SampleApp_SOURCES})
 
-target_include_directories(SampleApp PUBLIC
-    # This is relative to project(SampleApp).
+target_include_directories(SampleApp PUBLIC 
     "${SampleApp_SOURCE_DIR}/include"
     "${AudioResources_SOURCE_DIR}/include"
     "${RegistrationManager_SOURCE_DIR}/include"
@@ -70,12 +51,12 @@ target_include_directories(SampleApp PUBLIC
 
 target_link_libraries(SampleApp
     DefaultClient
-    AVSGatewayManager
     CapabilitiesDelegate
     CBLAuthDelegate
     SQLiteStorage
-    SynchronizeStateSender
     EqualizerImplementations
+    -lprotobuf
+    -lgrpc++
     "${PORTAUDIO_LIB_PATH}")
 
 if (PCC)
@@ -106,10 +87,10 @@ endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     target_link_libraries(SampleApp
-        "-framework CoreAudio"
-        "-framework AudioToolbox"
-        "-framework AudioUnit"
-        "-framework CoreServices"
+        "-framework CoreAudio" 
+        "-framework AudioToolbox" 
+        "-framework AudioUnit" 
+        "-framework CoreServices" 
         "-framework Carbon")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     target_link_libraries(SampleApp

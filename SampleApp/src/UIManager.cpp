@@ -13,8 +13,14 @@
  * permissions and limitations under the License.
  */
 
+#include <stdio.h>
 #include <iostream>
 #include <sstream>
+#include <cstdlib>
+#include <fcntl.h> 
+#include <sys/stat.h> 
+#include <sys/types.h> 
+#include <unistd.h> 
 
 #include "SampleApp/UIManager.h"
 
@@ -93,7 +99,7 @@ static const std::string HELP_MESSAGE =
     "|       Press '4' for a 'PREVIOUS' button press.                             |\n"
 #ifdef ENABLE_COMMS
     "| Comms Controls:                                                            |\n"
-    "|       Press 'd' followed by Enter at any time to control the call.         |\n"
+    "|       Press 'd' followed by Enter at any time to accept or stop calls.     |\n"
 #endif
     "| Settings:                                                                  |\n"
     "|       Press 'c' followed by Enter at any time to see the settings screen.  |\n"
@@ -106,11 +112,6 @@ static const std::string HELP_MESSAGE =
 #ifdef ENABLE_MCC
     "| Meeting Control:                                                           |\n"
     "|       Press 'j' followed by Enter at any time to control the meeting.      |\n"
-#endif
-#ifdef ENABLE_ENDPOINT_CONTROLLERS_MENU
-    "| Endpoint Controller:                                                       |\n"
-    "|       Press 'e' followed by Enter at any time to see the endpoint          |\n"
-    "|       controller screen.                                                   |\n"
 #endif
     "| Firmware Version:                                                          |\n"
     "|       Press 'f' followed by Enter at any time to report a different        |\n"
@@ -172,73 +173,17 @@ static const std::string LIMITED_HELP_MESSAGE =
 static const std::string SETTINGS_MESSAGE =
     "+----------------------------------------------------------------------------+\n"
     "|                          Setting Options:                                  |\n"
-    "|  Press '1' followed by Enter to see language options.                      |\n"
-    "|  Press '2' followed by Enter to see Do Not Disturb options.                |\n"
-    "|  Press '3' followed by Enter to see wake word confirmation options.        |\n"
-    "|  Press '4' followed by Enter to see speech confirmation options.           |\n"
-    "|  Press '5' followed by Enter to see time zone options.                     |\n"
-    "|  Press '6' followed by Enter to see the Alarm Volume Ramp options.         |\n"
-    "|  Press 'q' followed by Enter to exit Settings Options.                     |\n"
+    "| Change Language:                                                           |\n"
+    "|       Press '1' followed by Enter to see language options.                 |\n"
+    "| Change Do Not Disturb mode:                                                |\n"
+    "|       Press '2' followed by Enter to see Do Not Disturb options.           |\n"
+    "| Change Wake Word Confirmation:                                             |\n"
+    "|       Press '3' followed by Enter to see wake word confirmation options.   |\n"
+    "| Change Speech Confirmation:                                                |\n"
+    "|       Press '4' followed by Enter to see speech confirmation options.      |\n"
+    "| Change Time Zone:                                                          |\n"
+    "|       Press '5' followed by Enter to see time zone options.                |\n"
     "+----------------------------------------------------------------------------+\n";
-
-#ifdef ENABLE_ENDPOINT_CONTROLLERS_MENU
-static const std::string ENDPOINT_CONTROLLER_MESSAGE =
-    "+----------------------------------------------------------------------------+\n"
-    "|                          Endpoint Controller Options:                               |\n"
-#ifdef POWER_CONTROLLER
-    "|  Press '1' followed by Enter to see Power Controller Options.              |\n"
-#endif
-#ifdef TOGGLE_CONTROLLER
-    "|  Press '2' followed by Enter to see Toggle Controller Options.             |\n"
-#endif
-#ifdef MODE_CONTROLLER
-    "|  Press '3' followed by Enter to see Mode Controller Options.               |\n"
-#endif
-#ifdef RANGE_CONTROLLER
-    "|  Press '4' followed by Enter to see Range Controller Options.              |\n"
-#endif
-    "|  Press 'q' followed by Enter to exit Endpoint Controller Options.          |\n"
-    "+----------------------------------------------------------------------------+\n";
-#ifdef POWER_CONTROLLER
-static const std::string POWER_CONTROLLER_OPTIONS =
-    "+----------------------------------------------------------------------------+\n"
-    "|                        Power Controller Options :                          |\n"
-    "|                                                                            |\n"
-    "| Press '1' followed by Enter to set power state to ON.                      |\n"
-    "| Press '2' followed by Enter to set power state to OFF.                     |\n"
-    "| Press 'q' to exit Power Controller Options.                                |\n"
-    "+----------------------------------------------------------------------------+\n";
-#endif
-#ifdef TOGGLE_CONTROLLER
-static const std::string TOGGLE_CONTROLLER_OPTIONS =
-    "+----------------------------------------------------------------------------+\n"
-    "|                        Toggle Controller Options :                         |\n"
-    "|                                                                            |\n"
-    "| Press '1' followed by Enter to set toggle state to ON.                     |\n"
-    "| Press '2' followed by Enter to set toggle state to OFF.                    |\n"
-    "| Press 'q' to exit Toggle Controller Options.                               |\n"
-    "+----------------------------------------------------------------------------+\n";
-#endif
-#ifdef MODE_CONTROLLER
-static const std::string MODE_CONTROLLER_OPTIONS =
-    "+----------------------------------------------------------------------------+\n"
-    "|                        Mode Controller Options :                           |\n"
-    "|                                                                            |\n"
-    "| Press '1' followed by Enter to set mode to \"Red\".                          |\n"
-    "| Press '2' followed by Enter to set mode to \"Green\".                        |\n"
-    "| Press '3' followed by Enter to set mode to \"Blue\".                         |\n"
-    "| Press 'q' to exit Mode Controller Options.                                 |\n"
-    "+----------------------------------------------------------------------------+\n";
-#endif
-#ifdef RANGE_CONTROLLER
-static const std::string RANGE_CONTROLLER_OPTIONS =
-    "+----------------------------------------------------------------------------+\n"
-    "|                        Range Controller Options :                          |\n"
-    "|                                                                            |\n"
-    "| Enter Range between 1 to 10 followed by Enter.                             |\n"
-    "+----------------------------------------------------------------------------+\n";
-#endif
-#endif
 
 static const std::string LOCALE_MESSAGE_HEADER =
     "+----------------------------------------------------------------------------+\n"
@@ -371,10 +316,6 @@ static const std::string REAUTHORIZE_CONFIRMATION =
     "| Press 'N' followed by Enter to cancel re-authorization.                    |\n"
     "+----------------------------------------------------------------------------+\n";
 
-static const std::string ALARM_VOLUME_RAMP_HEADER =
-    "+----------------------------------------------------------------------------+\n"
-    "|                 Alarm Volume Ramp Configuration:                           |";
-
 static const std::string SPEECH_CONFIRMATION_HEADER =
     "+----------------------------------------------------------------------------+\n"
     "|                 Speech Confirmation Configuration:                         |";
@@ -391,12 +332,11 @@ static const std::string ENABLE_SETTING_MENU =
     "|                                                                            |\n"
     "| Press 'E' followed by Enter to enable this configuration.                  |\n"
     "| Press 'D' followed by Enter to disable this configuration.                 |\n"
-    "| Press 'q' followed by Enter to quit this configuration menu.               |\n"
     "+----------------------------------------------------------------------------+\n";
 
 static const std::string TIMEZONE_SETTING_MENU =
     "+----------------------------------------------------------------------------+\n"
-    "|                          TimeZone Configuration:                           |\n"
+    "|                          TimeZone Configuration:                           |"
     "|                                                                            |\n"
     "| Press '1' followed by Enter to set the time zone to America/Vancouver.     |\n"
     "| Press '2' followed by Enter to set the time zone to America/Edmonton.      |\n"
@@ -404,7 +344,6 @@ static const std::string TIMEZONE_SETTING_MENU =
     "| Press '4' followed by Enter to set the time zone to America/Toronto.       |\n"
     "| Press '5' followed by Enter to set the time zone to America/Halifax.       |\n"
     "| Press '6' followed by Enter to set the time zone to America/St_Johns.      |\n"
-    "| Press 'q' followed by Enter to quit this configuration menu.               |\n"
     "+----------------------------------------------------------------------------+\n";
 
 static const std::string RESET_WARNING =
@@ -412,9 +351,6 @@ static const std::string RESET_WARNING =
     "visit https://www.amazon.com/gp/help/customer/display.html?nodeId=201357520";
 
 static const std::string ENTER_LIMITED = "Entering limited interaction mode.";
-
-/// The name of the alarm volume ramp setting.
-static const std::string ALARM_VOLUME_RAMP_NAME = "AlarmVolumeRamp";
 
 /// The name of the speech confirmation setting.
 static const std::string SPEECH_CONFIRMATION_NAME = "SpeechConfirmation";
@@ -445,6 +381,9 @@ UIManager::UIManager(std::shared_ptr<avsCommon::sdkInterfaces::LocaleAssetsManag
         m_authCheckCounter{0},
         m_connectionStatus{avsCommon::sdkInterfaces::ConnectionStatusObserverInterface::Status::DISCONNECTED},
         m_localeAssetsManager{localeAssetsManager} {
+
+    channel = CreateChannel("0.0.0.0:50051", InsecureChannelCredentials());
+    stub = QtStat::NewStub(channel);
 }
 
 static const std::string COMMS_MESSAGE =
@@ -453,16 +392,6 @@ static const std::string COMMS_MESSAGE =
     "|                                                                            |\n"
     "| Press 'a' followed by Enter to accept an incoming call.                    |\n"
     "| Press 's' followed by Enter to stop an ongoing call.                       |\n"
-    "| Press 'd' followed by Enter to input dtmf tones.                           |\n"
-    "| Press 'q' to exit Comms Control Mode.                                      |\n"
-    "+----------------------------------------------------------------------------+\n";
-
-static const std::string DTMF_MESSAGE =
-    "+----------------------------------------------------------------------------+\n"
-    "|                              Dtmf Tones:                                   |\n"
-    "|                                                                            |\n"
-    "| Enter dtmf tones followed by Enter.                                        |\n"
-    "|                                                                            |\n"
     "+----------------------------------------------------------------------------+\n";
 
 void UIManager::onDialogUXStateChanged(DialogUXState state) {
@@ -514,10 +443,14 @@ void UIManager::onSetIndicator(avsCommon::avs::IndicatorState state) {
 
 void UIManager::onRequestAuthorization(const std::string& url, const std::string& code) {
     m_executor.submit([this, url, code]() {
+        
+        std::exit(0);
+
         m_authCheckCounter = 0;
         ConsolePrinter::prettyPrint("NOT YET AUTHORIZED");
         std::ostringstream oss;
         oss << "To authorize, browse to: '" << url << "' and enter the code: " << code;
+
         ConsolePrinter::prettyPrint(oss.str());
     });
 }
@@ -566,11 +499,13 @@ void UIManager::onAuthStateChange(AuthObserverInterface::State newState, AuthObs
                         case AuthObserverInterface::Error::AUTHORIZATION_EXPIRED:
                             ConsolePrinter::prettyPrint(
                                 {"AUTHORIZATION FAILED", "RE-AUTHORIZATION REQUIRED", ENTER_LIMITED});
+
                             setFailureStatus(REAUTH_REQUIRED_STR);
                             break;
                         case AuthObserverInterface::Error::INVALID_CODE_PAIR:
                             ConsolePrinter::prettyPrint(
                                 {"AUTHORIZATION CODE EXPIRED", "(RE)-AUTHORIZATION REQUIRED", ENTER_LIMITED});
+
                             setFailureStatus(REAUTH_REQUIRED_STR);
                             break;
                     }
@@ -614,36 +549,6 @@ void UIManager::printSettingsScreen() {
     m_executor.submit([]() { ConsolePrinter::simplePrint(SETTINGS_MESSAGE); });
 }
 
-#ifdef ENABLE_ENDPOINT_CONTROLLERS_MENU
-void UIManager::printEndpointControllerScreen() {
-    m_executor.submit([]() { ConsolePrinter::simplePrint(ENDPOINT_CONTROLLER_MESSAGE); });
-}
-#endif
-
-#ifdef POWER_CONTROLLER
-void UIManager::printPowerControllerScreen() {
-    m_executor.submit([]() { ConsolePrinter::simplePrint(POWER_CONTROLLER_OPTIONS); });
-}
-#endif
-
-#ifdef TOGGLE_CONTROLLER
-void UIManager::printToggleControllerScreen() {
-    m_executor.submit([]() { ConsolePrinter::simplePrint(TOGGLE_CONTROLLER_OPTIONS); });
-}
-#endif
-
-#ifdef MODE_CONTROLLER
-void UIManager::printModeControllerScreen() {
-    m_executor.submit([]() { ConsolePrinter::simplePrint(MODE_CONTROLLER_OPTIONS); });
-}
-#endif
-
-#ifdef RANGE_CONTROLLER
-void UIManager::printRangeControllerScreen() {
-    m_executor.submit([]() { ConsolePrinter::simplePrint(RANGE_CONTROLLER_OPTIONS); });
-}
-#endif
-
 void UIManager::printLocaleScreen() {
     auto supportedLocales = m_localeAssetsManager->getSupportedLocales();
     auto supportedLocaleCombinations = m_localeAssetsManager->getSupportedLocaleCombinations();
@@ -663,7 +568,6 @@ void UIManager::printLocaleScreen() {
                 "\n";
             option++;
         }
-        optionString += "| Press '0' followed by Enter to quit.\n";
         ConsolePrinter::simplePrint(LOCALE_MESSAGE_HEADER + optionString + LOCALE_MESSAGE_FOOTER);
     };
 
@@ -710,19 +614,9 @@ void UIManager::printCalendarItemsScreen() {
 }
 #endif
 
-#ifdef ENABLE_COMMS
 void UIManager::printCommsControlScreen() {
     m_executor.submit([]() { ConsolePrinter::simplePrint(COMMS_MESSAGE); });
 }
-
-void UIManager::printDtmfScreen() {
-    m_executor.submit([]() { ConsolePrinter::simplePrint(DTMF_MESSAGE); });
-}
-
-void UIManager::printDtmfErrorScreen() {
-    m_executor.submit([]() { ConsolePrinter::prettyPrint("Invalid Dtmf Tones"); });
-}
-#endif
 
 void UIManager::printErrorScreen() {
     m_executor.submit([]() { ConsolePrinter::prettyPrint("Invalid Option"); });
@@ -742,13 +636,6 @@ void UIManager::printReauthorizeConfirmation() {
 
 void UIManager::printResetWarning() {
     m_executor.submit([]() { ConsolePrinter::prettyPrint(RESET_WARNING); });
-}
-
-void UIManager::printAlarmVolumeRampScreen() {
-    m_executor.submit([]() {
-        ConsolePrinter::simplePrint(ALARM_VOLUME_RAMP_HEADER);
-        ConsolePrinter::simplePrint(ENABLE_SETTING_MENU);
-    });
 }
 
 void UIManager::printDoNotDisturbScreen() {
@@ -809,6 +696,12 @@ void UIManager::onSettingNotification(
 }
 
 void UIManager::printState() {
+    
+    VoiceStatusRequest request;
+    VoiceStatusResponse response;
+    grpc::Status status_;
+    context = new ClientContext;
+
     if (m_connectionStatus == avsCommon::sdkInterfaces::ConnectionStatusObserverInterface::Status::DISCONNECTED) {
         ConsolePrinter::prettyPrint("Client not connected!");
     } else if (m_connectionStatus == avsCommon::sdkInterfaces::ConnectionStatusObserverInterface::Status::PENDING) {
@@ -816,9 +709,17 @@ void UIManager::printState() {
     } else if (m_connectionStatus == avsCommon::sdkInterfaces::ConnectionStatusObserverInterface::Status::CONNECTED) {
         switch (m_dialogState) {
             case DialogUXState::IDLE:
+                request.set_state(qtstat::VoiceStatus::VOICE_IDLE);
+                status_ = stub->UpdateVoiceStatus(context, request, &response);
+                system("play /home/root/AVS/resources/med_ui_endpointing.wav &> /dev/null");
+
                 ConsolePrinter::prettyPrint("Alexa is currently idle!");
                 return;
             case DialogUXState::LISTENING:
+                request.set_state(qtstat::VoiceStatus::VOICE_LISTENING);
+                status_ = stub->UpdateVoiceStatus(context, request, &response);
+                system("play /home/root/AVS/resources/med_ui_wakesound.wav &> /dev/null");
+
                 ConsolePrinter::prettyPrint("Listening...");
                 return;
             case DialogUXState::EXPECTING:
@@ -828,6 +729,9 @@ void UIManager::printState() {
                 ConsolePrinter::prettyPrint("Thinking...");
                 return;
             case DialogUXState::SPEAKING:
+                request.set_state(qtstat::VoiceStatus::VOICE_PROCESSING);
+                status_ = stub->UpdateVoiceStatus(context, request, &response);
+
                 ConsolePrinter::prettyPrint("Speaking...");
                 return;
             /*
@@ -862,10 +766,6 @@ bool UIManager::configureSettingsNotifications(std::shared_ptr<settings::DeviceS
     bool ok =
         m_callbacks->add<DeviceSettingsIndex::DO_NOT_DISTURB>([this](bool enable, SettingNotifications notifications) {
             onBooleanSettingNotification(DO_NOT_DISTURB_NAME, enable, notifications);
-        });
-    ok &= m_callbacks->add<DeviceSettingsIndex::ALARM_VOLUME_RAMP>(
-        [this](types::AlarmVolumeRampTypes volumeRamp, SettingNotifications notifications) {
-            onSettingNotification(ALARM_VOLUME_RAMP_NAME, volumeRamp, notifications);
         });
     ok &= m_callbacks->add<DeviceSettingsIndex::SPEECH_CONFIRMATION>(
         [this](settings::SpeechConfirmationSettingType value, SettingNotifications notifications) {

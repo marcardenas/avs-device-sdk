@@ -16,6 +16,8 @@
 #ifndef ALEXA_CLIENT_SDK_SAMPLEAPP_INCLUDE_SAMPLEAPP_UIMANAGER_H_
 #define ALEXA_CLIENT_SDK_SAMPLEAPP_INCLUDE_SAMPLEAPP_UIMANAGER_H_
 
+#include <grpcpp/grpcpp.h>
+
 #include <Alerts/AlertObserverInterface.h>
 #include <AVSCommon/SDKInterfaces/AuthObserverInterface.h>
 #include <AVSCommon/SDKInterfaces/CapabilitiesObserverInterface.h>
@@ -33,6 +35,20 @@
 #include <Settings/SettingCallbacks.h>
 #include <Settings/SpeechConfirmationSettingType.h>
 #include <Settings/WakeWordConfirmationSettingType.h>
+
+#include "qtstat.grpc.pb.h"
+
+using grpc::Channel;
+using grpc::ClientContext;
+using grpc::Status;
+using grpc::ChannelInterface;
+using grpc::InsecureChannelCredentials;
+
+using qtstat::QtStat;
+using qtstat::VoiceStatusRequest;
+using qtstat::VoiceStatusResponse;
+using qtstat::DisplayRequest;
+using qtstat::DisplayResponse;
 
 namespace alexaClientSDK {
 namespace sampleApp {
@@ -129,34 +145,9 @@ public:
     void printSettingsScreen();
 
     /**
-     * Prints the Endpoint Controller Options screen.
-     */
-    void printEndpointControllerScreen();
-
-    /**
      * Prints the Locale Options screen.
      */
     void printLocaleScreen();
-
-    /**
-     * Prints the Power Controller Options screen.
-     */
-    void printPowerControllerScreen();
-
-    /**
-     * Prints the Toggle Controller Options screen.
-     */
-    void printToggleControllerScreen();
-
-    /**
-     * Prints the Mode Controller Options screen.
-     */
-    void printModeControllerScreen();
-
-    /**
-     * Prints the Range Controller Options screen.
-     */
-    void printRangeControllerScreen();
 
     /**
      * Prints the Speaker Control Options screen. This prompts the user to select a @c SpeakerInterface::Type to modify.
@@ -207,22 +198,10 @@ public:
     void printCalendarItemsScreen();
 #endif
 
-#ifdef ENABLE_COMMS
     /**
      * Prints the Comms Control Options screen. This gives the user the possible Comms control options.
      */
     void printCommsControlScreen();
-
-    /**
-     *  Prints the dtmf screen. This prompts the user to enter dtmf tones.
-     */
-    void printDtmfScreen();
-
-    /**
-     * Prints the Error Message for Invalid dtmf input.
-     */
-    void printDtmfErrorScreen();
-#endif
 
     /**
      * Prints the Error Message for Wrong Input.
@@ -268,11 +247,6 @@ public:
     bool configureSettingsNotifications(std::shared_ptr<settings::DeviceSettingsManager> settingsManager);
 
     /**
-     * Prints menu for alarm volume ramp.
-     */
-    void printAlarmVolumeRampScreen();
-
-    /**
      * Prints menu for wake word confirmation.
      */
     void printWakeWordConfirmationScreen();
@@ -293,6 +267,14 @@ public:
     void printDoNotDisturbScreen();
 
 private:
+
+    /* gRPC implementation */
+
+    std::shared_ptr<grpc::Channel> channel;
+    std::unique_ptr<QtStat::Stub> stub;
+
+    ClientContext * context;
+
     /**
      * Prints the current state of Alexa after checking what the appropriate message to display is based on the current
      * component states. This should only be used within the internal executor.

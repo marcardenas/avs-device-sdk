@@ -20,7 +20,6 @@
 
 #include <Audio/MicrophoneInterface.h>
 #include <AVSCommon/SDKInterfaces/DialogUXStateObserverInterface.h>
-#include <AVSCommon/SDKInterfaces/CallStateObserverInterface.h>
 #include <AVSCommon/SDKInterfaces/SpeakerInterface.h>
 #include <AVSCommon/Utils/RequiresShutdown.h>
 #include <DefaultClient/DefaultClient.h>
@@ -42,22 +41,6 @@
 #include "MeetingClient.h"
 #endif
 
-#ifdef POWER_CONTROLLER
-#include "PowerControllerHandler.h"
-#endif
-
-#ifdef TOGGLE_CONTROLLER
-#include "ToggleControllerHandler.h"
-#endif
-
-#ifdef RANGE_CONTROLLER
-#include "RangeControllerHandler.h"
-#endif
-
-#ifdef MODE_CONTROLLER
-#include "ModeControllerHandler.h"
-#endif
-
 namespace alexaClientSDK {
 namespace sampleApp {
 
@@ -67,7 +50,6 @@ namespace sampleApp {
  */
 class InteractionManager
         : public avsCommon::sdkInterfaces::DialogUXStateObserverInterface
-        , public avsCommon::sdkInterfaces::CallStateObserverInterface
         , public avsCommon::utils::RequiresShutdown {
 public:
     /**
@@ -88,19 +70,6 @@ public:
         capabilityAgents::aip::AudioProvider tapToTalkAudioProvider,
         std::shared_ptr<sampleApp::GuiRenderer> guiRenderer = nullptr,
         capabilityAgents::aip::AudioProvider wakeWordAudioProvider = capabilityAgents::aip::AudioProvider::null(),
-
-#ifdef POWER_CONTROLLER
-        std::shared_ptr<PowerControllerHandler> powerControllerHandler = nullptr,
-#endif
-#ifdef TOGGLE_CONTROLLER
-        std::shared_ptr<ToggleControllerHandler> toggleControllerHandler = nullptr,
-#endif
-#ifdef RANGE_CONTROLLER
-        std::shared_ptr<RangeControllerHandler> rangeControllerHandler = nullptr,
-#endif
-#ifdef MODE_CONTROLLER
-        std::shared_ptr<ModeControllerHandler> modeControllerHandler = nullptr,
-#endif
         std::shared_ptr<avsCommon::sdkInterfaces::CallManagerInterface> callManager = nullptr);
 
     /**
@@ -203,11 +172,6 @@ public:
     void settings();
 
     /**
-     * Should be called whenever a user requests 'ALARM_VOLUME_RAMP' change.
-     */
-    void alarmVolumeRamp();
-
-    /**
      * Should be called whenever a user requests 'WAKEWORD_CONFIRMATION' change.
      */
     void wakewordConfirmation();
@@ -221,41 +185,6 @@ public:
      * Should be called whenever a user requests 'LOCALE' change.
      */
     void locale();
-
-#ifdef ENABLE_ENDPOINT_CONTROLLERS_MENU
-    /**
-     * Should be called whenever a user presses 'ENDPOINT_CONTROLLER' for endpoint point controller options.
-     */
-    void endpointController();
-#endif
-
-#ifdef POWER_CONTROLLER
-    /**
-     * Should be called whenever a user requests 'POWER CONTROLLER' options.
-     */
-    void powerController();
-
-#endif
-#ifdef TOGGLE_CONTROLLER
-    /**
-     * Should be called whenever a user requests 'TOGGLE CONTROLLER' options.
-     */
-    void toggleController();
-#endif
-
-#ifdef MODE_CONTROLLER
-    /**
-     * Should be called whenever a user requests 'MODE CONTROLLER' options.
-     */
-    void modeController();
-#endif
-
-#ifdef RANGE_CONTROLLER
-    /**
-     * Should be called whenever a user requests 'RANGE CONTROLLER' options.
-     */
-    void rangeController();
-#endif
 
     /**
      * Should be called whenever a user requests 'TIMEZONE' change.
@@ -319,7 +248,6 @@ public:
      */
     void confirmReauthorizeDevice();
 
-#ifdef ENABLE_COMMS
     /**
      * Grants the user access to the communications controls.
      */
@@ -331,37 +259,14 @@ public:
     void acceptCall();
 
     /**
-     * Send dtmf tones during the call.
-     *
-     * @param dtmfTone The signal of the dtmf message.
-     */
-    void sendDtmf(avsCommon::sdkInterfaces::CallManagerInterface::DTMFTone dtmfTone);
-
-    /**
-     * Should be called whenever collecting a dtmf.
-     */
-    void dtmfControl();
-
-    /**
-     * Should be called whenever a user presses invalid dtmf.
-     */
-    void errorDtmf();
-
-    /**
      * Should be called when the user wants to stop a call.
      */
     void stopCall();
-#endif
 
     /**
      * UXDialogObserverInterface methods
      */
     void onDialogUXStateChanged(DialogUXState newState) override;
-
-    /**
-     * CallStateObserverInterface methods
-     */
-    void onCallStateChange(CallState newState) override;
 
 #ifdef ENABLE_PCC
     /**
@@ -430,11 +335,6 @@ public:
     void setDoNotDisturbMode(bool enable);
 
     /**
-     * Sets the Alarm Volume Ramp state.
-     */
-    void setAlarmVolumeRamp(bool enable);
-
-    /**
      * Sets the speech confirmation state.
      */
     void setSpeechConfirmation(settings::SpeechConfirmationSettingType value);
@@ -453,42 +353,6 @@ public:
      * Sets the locale of the device.
      */
     void setLocale(const settings::DeviceLocales& value);
-
-#ifdef POWER_CONTROLLER
-    /**
-     * Sets the power state on power handler.
-     *
-     * @param powerState Power state to be set.
-     */
-    void setPowerState(const bool powerState);
-#endif
-
-#ifdef TOGGLE_CONTROLLER
-    /**
-     * Sets the toggle state on toggle handler.
-     *
-     * @param toggleState Toggle state to be set.
-     */
-    void setToggleState(const bool toggleState);
-#endif
-
-#ifdef RANGE_CONTROLLER
-    /**
-     * Sets the range on range handler.
-     *
-     * @param rangeValue A range to be set.
-     */
-    void setRangeValue(const int rangeValue);
-#endif
-
-#ifdef MODE_CONTROLLER
-    /**
-     * Sets the mode on mode handler.
-     *
-     * @param mode The mode to be set.
-     */
-    void setMode(const std::string mode);
-#endif
 
 private:
     /// The default SDK client.
@@ -527,36 +391,13 @@ private:
     /// The wake word audio provider.
     capabilityAgents::aip::AudioProvider m_wakeWordAudioProvider;
 
-#ifdef POWER_CONTROLLER
-    /// The Power Controller Handler
-    std::shared_ptr<PowerControllerHandler> m_powerControllerHandler;
-#endif
-
-#ifdef TOGGLE_CONTROLLER
-    /// The Toggle Controller Handler
-    std::shared_ptr<ToggleControllerHandler> m_toggleControllerHandler;
-#endif
-
-#ifdef RANGE_CONTROLLER
-    /// The Range Controller Handler
-    std::shared_ptr<RangeControllerHandler> m_rangeControllerHandler;
-#endif
-
-#ifdef MODE_CONTROLLER
-    /// The Mode Controller Handler
-    std::shared_ptr<ModeControllerHandler> m_modeControllerHandler;
-#endif
-
     /// Whether a hold is currently occurring.
     bool m_isHoldOccurring;
 
     /// Whether a tap is currently occurring.
     bool m_isTapOccurring;
 
-    /// Whether a call is currently connected.
-    bool m_isCallConnected;
-
-    /// Whether the microphone is currently on.
+    /// Whether the microphone is currently turned on.
     bool m_isMicOn;
 
     /**

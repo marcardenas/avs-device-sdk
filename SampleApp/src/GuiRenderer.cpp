@@ -100,6 +100,8 @@ GuiRenderer::GuiRenderer() {
     m_guiToggleStateMap.insert(std::make_pair(TOGGLE_NAME_THUMBSUP, false));
 }
 
+static const std::string TEXT_FIELD_TAG("textField");
+
 const std::string GuiRenderer::TOGGLE_ACTION_SELECTED = "SELECTED";
 
 const std::string GuiRenderer::TOGGLE_ACTION_DESELECTED = "DESELECTED";
