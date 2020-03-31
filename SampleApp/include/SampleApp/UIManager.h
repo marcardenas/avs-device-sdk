@@ -16,7 +16,11 @@
 #ifndef ALEXA_CLIENT_SDK_SAMPLEAPP_INCLUDE_SAMPLEAPP_UIMANAGER_H_
 #define ALEXA_CLIENT_SDK_SAMPLEAPP_INCLUDE_SAMPLEAPP_UIMANAGER_H_
 
+<<<<<<< HEAD
 #include <grpcpp/grpcpp.h>
+=======
+#include <grpc++/grpc++.h>
+>>>>>>> develop
 
 #include <Alerts/AlertObserverInterface.h>
 #include <AVSCommon/SDKInterfaces/AuthObserverInterface.h>
@@ -36,7 +40,11 @@
 #include <Settings/SpeechConfirmationSettingType.h>
 #include <Settings/WakeWordConfirmationSettingType.h>
 
+<<<<<<< HEAD
 #include "qtstat.grpc.pb.h"
+=======
+#include "siana-stat.grpc.pb.h"
+>>>>>>> develop
 
 using grpc::Channel;
 using grpc::ClientContext;
@@ -44,12 +52,15 @@ using grpc::Status;
 using grpc::ChannelInterface;
 using grpc::InsecureChannelCredentials;
 
+<<<<<<< HEAD
 using qtstat::QtStat;
 using qtstat::VoiceStatusRequest;
 using qtstat::VoiceStatusResponse;
 using qtstat::DisplayRequest;
 using qtstat::DisplayResponse;
 
+=======
+>>>>>>> develop
 namespace alexaClientSDK {
 namespace sampleApp {
 
@@ -268,10 +279,15 @@ public:
 
 private:
 
+<<<<<<< HEAD
     /* gRPC implementation */
 
     std::shared_ptr<grpc::Channel> channel;
     std::unique_ptr<QtStat::Stub> stub;
+=======
+    std::shared_ptr<grpc::Channel> channel;
+    std::unique_ptr<SianaStat::Stub> stub;
+>>>>>>> develop
 
     ClientContext * context;
 

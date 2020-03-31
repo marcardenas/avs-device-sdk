@@ -71,6 +71,8 @@ public:
         std::shared_ptr<alexaClientSDK::sampleApp::ConsoleReader> consoleReader,
         const std::vector<std::string>& configFiles,
         const std::string& pathToInputFolder,
+        const float sensitivity,
+        const float gain,
         const std::string& logLevel = "");
 
     /**
@@ -146,6 +148,8 @@ private:
         std::shared_ptr<alexaClientSDK::sampleApp::ConsoleReader> consoleReader,
         const std::vector<std::string>& configFiles,
         const std::string& pathToInputFolder,
+        const float sensitivity,
+        const float gain,
         const std::string& logLevel);
 
     /**

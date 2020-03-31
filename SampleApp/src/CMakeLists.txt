@@ -11,10 +11,16 @@ list(APPEND SampleApp_SOURCES
     UserInputManager.cpp
     SampleApplication.cpp
     SampleEqualizerModeController.cpp
+<<<<<<< HEAD
     main.cpp
     qtstat.grpc.pb.cc
     qtstat.pb.cc
     )
+=======
+    siana-stat.grpc.pb.cc
+    siana-stat.pb.cc
+    main.cpp)
+>>>>>>> develop
 
 if (PORTAUDIO)
     list(APPEND SampleApp_SOURCES PortAudioMicrophoneWrapper.cpp)

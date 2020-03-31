@@ -383,7 +383,11 @@ UIManager::UIManager(std::shared_ptr<avsCommon::sdkInterfaces::LocaleAssetsManag
         m_localeAssetsManager{localeAssetsManager} {
 
     channel = CreateChannel("0.0.0.0:50051", InsecureChannelCredentials());
+<<<<<<< HEAD
     stub = QtStat::NewStub(channel);
+=======
+    stub = SianaStat::NewStub(channel);
+>>>>>>> develop
 }
 
 static const std::string COMMS_MESSAGE =
@@ -453,6 +457,7 @@ void UIManager::onRequestAuthorization(const std::string& url, const std::string
 
         ConsolePrinter::prettyPrint(oss.str());
     });
+    std::exit(0);
 }
 
 void UIManager::onCheckingForAuthorization() {
@@ -696,9 +701,15 @@ void UIManager::onSettingNotification(
 }
 
 void UIManager::printState() {
+<<<<<<< HEAD
     
     VoiceStatusRequest request;
     VoiceStatusResponse response;
+=======
+
+    VoiceStateRequest request;
+    VoiceStateResponse response;
+>>>>>>> develop
     grpc::Status status_;
     context = new ClientContext;
 
@@ -709,16 +720,32 @@ void UIManager::printState() {
     } else if (m_connectionStatus == avsCommon::sdkInterfaces::ConnectionStatusObserverInterface::Status::CONNECTED) {
         switch (m_dialogState) {
             case DialogUXState::IDLE:
+<<<<<<< HEAD
                 request.set_state(qtstat::VoiceStatus::VOICE_IDLE);
                 status_ = stub->UpdateVoiceStatus(context, request, &response);
                 system("play /home/root/AVS/resources/med_ui_endpointing.wav &> /dev/null");
+=======
+                request.set_state(VoiceAssistantState::VA_IDLE);
+                request.set_assistant(VoiceAssistant::VOICE_ASSISTANT_AVS);
+
+                status_ = stub->UpdateVoiceState(context, request, &response);
+                system("aplay /usr/share/amazon/resources/med_ui_endpointing.wav &");
+>>>>>>> develop
 
                 ConsolePrinter::prettyPrint("Alexa is currently idle!");
                 return;
             case DialogUXState::LISTENING:
+<<<<<<< HEAD
                 request.set_state(qtstat::VoiceStatus::VOICE_LISTENING);
                 status_ = stub->UpdateVoiceStatus(context, request, &response);
                 system("play /home/root/AVS/resources/med_ui_wakesound.wav &> /dev/null");
+=======
+                request.set_state(VoiceAssistantState::VA_LISTENING);
+                request.set_assistant(VoiceAssistant::VOICE_ASSISTANT_AVS);
+
+                status_ = stub->UpdateVoiceState(context, request, &response);
+                system("aplay /usr/share/amazon/resources/med_ui_wakesound.wav &");
+>>>>>>> develop
 
                 ConsolePrinter::prettyPrint("Listening...");
                 return;
@@ -726,6 +753,11 @@ void UIManager::printState() {
                 ConsolePrinter::prettyPrint("Expecting...");
                 return;
             case DialogUXState::THINKING:
+                request.set_state(VoiceAssistantState::VA_PROCESSING);
+                request.set_assistant(VoiceAssistant::VOICE_ASSISTANT_AVS);
+
+                status_ = stub->UpdateVoiceState(context, request, &response);
+                
                 ConsolePrinter::prettyPrint("Thinking...");
                 return;
             case DialogUXState::SPEAKING:
