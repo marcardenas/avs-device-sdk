@@ -357,7 +357,7 @@ private:
     void setFailureStatus(const std::string& status);
 
     /// The current dialog UX state of the SDK
-    DialogUXState m_dialogState;
+    DialogUXState m_dialogState, storedState;
 
     /// The current CapabilitiesDelegate state.
     avsCommon::sdkInterfaces::CapabilitiesObserverInterface::State m_capabilitiesState;

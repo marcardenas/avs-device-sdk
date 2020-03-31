@@ -470,6 +470,8 @@ static const std::string DTMF_MESSAGE =
 
 void UIManager::onDialogUXStateChanged(DialogUXState state) {
     m_executor.submit([this, state]() {
+        storedState = state;
+        
         if (state == m_dialogState) {
             return;
         }

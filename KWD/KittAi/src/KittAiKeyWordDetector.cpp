@@ -208,6 +208,7 @@ void KittAiKeyWordDetector::detectionLoop() {
             int detectionResult = m_kittAiEngine->RunDetection(audioDataToPush, wordsRead);
             if (detectionResult > 0) {
                 // > 0 indicates a keyword was found
+                std::cout << "SNOWBOY detected a wakeword" << std::endl;
                 if (m_detectionResultsToKeyWords.find(detectionResult) == m_detectionResultsToKeyWords.end()) {
                     ACSDK_ERROR(LX("detectionLoopFailed").d("reason", "retrievingDetectedKeyWordFailed"));
                     notifyKeyWordDetectorStateObservers(
