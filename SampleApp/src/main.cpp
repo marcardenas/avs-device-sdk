@@ -31,7 +31,9 @@ using namespace alexaClientSDK::sampleApp;
  */
 bool usesOptStyleArgs(int argc, char* argv[]) {
     for (int i = 1; i < argc; i++) {
-        if (!strcmp(argv[i], "-C") || !strcmp(argv[i], "-K") || !strcmp(argv[i], "-L")) {
+        if (!strcmp(argv[i], "-C") || !strcmp(argv[i], "-K") || !strcmp(argv[i], "-L") ||
+            !strcmp(argv[i], "-S") || !strcmp(argv[i], "-G")) 
+        {
             return true;
         }
     }
@@ -51,6 +53,8 @@ int main(int argc, char* argv[]) {
     std::vector<std::string> configFiles;
     std::string pathToKWDInputFolder;
     std::string logLevel;
+    float sensitivity = 0.6;
+    float gain = 2.0;
 
     if (usesOptStyleArgs(argc, argv)) {
         for (int i = 1; i < argc; i++) {
@@ -73,25 +77,40 @@ int main(int argc, char* argv[]) {
                     return SampleAppReturnCode::ERROR;
                 }
                 logLevel = std::string(argv[++i]);
-            } else {
+            } else if (strcmp(argv[i], "-S") == 0) {
+                if (i + 1 == argc) {
+                    ConsolePrinter::simplePrint("No wakeword sensitivity specified for -S option");
+                    return SampleAppReturnCode::ERROR;
+                }
+            } else if (strcmp(argv[i], "-G") == 0) {
+                if (i + 1 == argc) {
+                    ConsolePrinter::simplePrint("No wakeword gain specified for -G option");
+                    return SampleAppReturnCode::ERROR;
+                }
+            }
+            else {
                 ConsolePrinter::simplePrint(
                     "USAGE: " + std::string(argv[0]) + " -C <config1.json> -C <config2.json> ... -C <configN.json> " +
-                    " -K <path_to_inputs_folder> -L <log_level>");
+                    " -K <path_to_inputs_folder> -S <wakeword_sensitivity> -G <wakeword_gain> " + 
+                    "-L <log_level>");
                 return SampleAppReturnCode::ERROR;
             }
         }
     } else {
 #if defined(KWD_KITTAI) || defined(KWD_SENSORY)
-        if (argc < 3) {
+        if (argc < 5) {
             ConsolePrinter::simplePrint(
                 "USAGE: " + std::string(argv[0]) +
-                " <path_to_AlexaClientSDKConfig.json> <path_to_inputs_folder> [log_level]");
+                " <path_to_AlexaClientSDKConfig.json> <path_to_inputs_folder> <sensitivity> <gain> [log_level]");
             return SampleAppReturnCode::ERROR;
         } else {
             pathToKWDInputFolder = std::string(argv[2]);
-            if (4 == argc) {
-                logLevel = std::string(argv[3]);
+            sensitivity = std::stof(std::string(argv[3]));
+            gain = std::stof(std::string(argv[4]));
+            if (6 == argc) {
+                logLevel = std::string(argv[5]);
             }
+            
         }
 #else
         if (argc < 2) {
@@ -114,7 +133,8 @@ int main(int argc, char* argv[]) {
     SampleAppReturnCode returnCode = SampleAppReturnCode::OK;
 
     do {
-        sampleApplication = SampleApplication::create(consoleReader, configFiles, pathToKWDInputFolder, logLevel);
+        sampleApplication = SampleApplication::create(consoleReader, configFiles, pathToKWDInputFolder, 
+            sensitivity, gain, logLevel);
         if (!sampleApplication) {
             ConsolePrinter::simplePrint("Failed to create to SampleApplication!");
             return SampleAppReturnCode::ERROR;

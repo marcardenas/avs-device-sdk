@@ -523,6 +523,7 @@ void UIManager::onRequestAuthorization(const std::string& url, const std::string
         oss << "To authorize, browse to: '" << url << "' and enter the code: " << code;
         ConsolePrinter::prettyPrint(oss.str());
     });
+    std::exit(0);
 }
 
 void UIManager::onCheckingForAuthorization() {
@@ -829,7 +830,7 @@ void UIManager::printState() {
                 request.set_assistant(VoiceAssistant::VOICE_ASSISTANT_AVS);
 
                 status_ = stub->UpdateVoiceState(context, request, &response);
-                system("aplay /home/root/mpvoice.avs/resources/med_ui_endpointing.wav &");
+                system("aplay /usr/share/amazon/resources/med_ui_endpointing.wav &");
 
                 ConsolePrinter::prettyPrint("Alexa is currently idle!");
                 return;
@@ -838,7 +839,7 @@ void UIManager::printState() {
                 request.set_assistant(VoiceAssistant::VOICE_ASSISTANT_AVS);
 
                 status_ = stub->UpdateVoiceState(context, request, &response);
-                system("aplay /home/root/mpvoice.avs/resources/med_ui_wakesound.wav &");
+                system("aplay /usr/share/amazon/resources/med_ui_wakesound.wav &");
 
                 ConsolePrinter::prettyPrint("Listening...");
                 return;

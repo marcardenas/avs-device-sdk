@@ -41,6 +41,8 @@ std::unique_ptr<kwd::AbstractKeywordDetector> KeywordDetectorProvider::create(
     std::unordered_set<std::shared_ptr<avsCommon::sdkInterfaces::KeyWordObserverInterface>> keyWordObservers,
     std::unordered_set<std::shared_ptr<avsCommon::sdkInterfaces::KeyWordDetectorStateObserverInterface>>
         keyWordDetectorStateObservers,
+    const float sensitivity,
+    const float gain,
     const std::string& pathToInputFolder) {
 #if defined(KWD_KITTAI)
     return alexaClientSDK::kwd::KittAiKeyWordDetector::create(
@@ -49,8 +51,8 @@ std::unique_ptr<kwd::AbstractKeywordDetector> KeywordDetectorProvider::create(
         keyWordObservers,
         keyWordDetectorStateObservers,
         pathToInputFolder + "/common.res",
-        {{pathToInputFolder + "/alexa.umdl", "ALEXA", KITT_AI_SENSITIVITY}},
-        KITT_AI_AUDIO_GAIN,
+        {{pathToInputFolder + "/alexa.umdl", "ALEXA", sensitivity}},
+        gain,
         KITT_AI_APPLY_FRONT_END_PROCESSING);
 
 #elif defined(KWD_SENSORY)

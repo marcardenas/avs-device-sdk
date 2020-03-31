@@ -52,6 +52,8 @@ public:
         std::unordered_set<std::shared_ptr<avsCommon::sdkInterfaces::KeyWordObserverInterface>> keyWordObservers,
         std::unordered_set<std::shared_ptr<avsCommon::sdkInterfaces::KeyWordDetectorStateObserverInterface>>
             keyWordDetectorStateObservers,
+        const float sensitivity,
+        const float gain,
         const std::string& pathToInputFolder);
 };
 
