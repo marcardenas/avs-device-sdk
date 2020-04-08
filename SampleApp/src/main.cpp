@@ -55,6 +55,7 @@ int main(int argc, char* argv[]) {
     std::string logLevel;
     float sensitivity = 0.6;
     float gain = 2.0;
+    bool stateSoundEnable = false;
 
     if (usesOptStyleArgs(argc, argv)) {
         for (int i = 1; i < argc; i++) {
@@ -101,14 +102,15 @@ int main(int argc, char* argv[]) {
         if (argc < 5) {
             ConsolePrinter::simplePrint(
                 "USAGE: " + std::string(argv[0]) +
-                " <path_to_AlexaClientSDKConfig.json> <path_to_inputs_folder> <sensitivity> <gain> [log_level]");
+                " <path_to_AlexaClientSDKConfig.json> <path_to_inputs_folder> <sensitivity> <gain> <state_sound_enable> [log_level]");
             return SampleAppReturnCode::ERROR;
         } else {
             pathToKWDInputFolder = std::string(argv[2]);
             sensitivity = std::stof(std::string(argv[3]));
             gain = std::stof(std::string(argv[4]));
-            if (6 == argc) {
-                logLevel = std::string(argv[5]);
+            stateSoundEnable = (bool) std::stoi(std::string(argv[5]));
+            if (7 == argc) {
+                logLevel = std::string(argv[6]);
             }
             
         }
@@ -134,7 +136,7 @@ int main(int argc, char* argv[]) {
 
     do {
         sampleApplication = SampleApplication::create(consoleReader, configFiles, pathToKWDInputFolder, 
-            sensitivity, gain, logLevel);
+            sensitivity, gain, stateSoundEnable, logLevel);
         if (!sampleApplication) {
             ConsolePrinter::simplePrint("Failed to create to SampleApplication!");
             return SampleAppReturnCode::ERROR;

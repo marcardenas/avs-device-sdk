@@ -74,6 +74,7 @@ public:
         const std::string& pathToInputFolder,
         const float sensitivity,
         const float gain,
+        const bool stateSoundEnable,
         const std::string& logLevel = "");
 
     /**
@@ -151,6 +152,7 @@ private:
         const std::string& pathToInputFolder,
         const float sensitivity,
         const float gain,
+        const bool stateSoundEnable,
         const std::string& logLevel);
 
     /**

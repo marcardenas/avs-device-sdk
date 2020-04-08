@@ -69,7 +69,8 @@ public:
      *
      * @param localeAssetsManager The @c LocaleAssetsManagerInterface that provides the supported locales.
      */
-    UIManager(std::shared_ptr<avsCommon::sdkInterfaces::LocaleAssetsManagerInterface> localeAssetsManager);
+    UIManager(std::shared_ptr<avsCommon::sdkInterfaces::LocaleAssetsManagerInterface> localeAssetsManager,
+        const bool stateSoundEnable);
 
     void onDialogUXStateChanged(DialogUXState state) override;
 
@@ -309,6 +310,7 @@ private:
 
     ClientContext * context;
 
+    bool stateSoundEnable = false;
     /**
      * Prints the current state of Alexa after checking what the appropriate message to display is based on the current
      * component states. This should only be used within the internal executor.

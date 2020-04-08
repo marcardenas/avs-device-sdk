@@ -289,9 +289,10 @@ std::unique_ptr<SampleApplication> SampleApplication::create(
     const std::string& pathToInputFolder,
     const float sensitivity,
     const float gain,
+    const bool stateSoundEnable,
     const std::string& logLevel) {
     auto clientApplication = std::unique_ptr<SampleApplication>(new SampleApplication);
-    if (!clientApplication->initialize(consoleReader, configFiles, pathToInputFolder, sensitivity, gain, logLevel)) {
+    if (!clientApplication->initialize(consoleReader, configFiles, pathToInputFolder, sensitivity, gain, stateSoundEnable, logLevel)) {
         ACSDK_CRITICAL(LX("Failed to initialize SampleApplication"));
         return nullptr;
     }
@@ -415,6 +416,7 @@ bool SampleApplication::initialize(
     const std::string& pathToInputFolder,
     const float sensitivity,
     const float gain,
+    const bool stateSoundEnable,
     const std::string& logLevel) {
     /*
      * Set up the SDK logging system to write to the SampleApp's ConsolePrinter.  Also adjust the logging level
@@ -699,7 +701,7 @@ bool SampleApplication::initialize(
     /*
      * Creating the UI component that observes various components and prints to the console accordingly.
      */
-    auto userInterfaceManager = std::make_shared<alexaClientSDK::sampleApp::UIManager>(localeAssetsManager);
+    auto userInterfaceManager = std::make_shared<alexaClientSDK::sampleApp::UIManager>(localeAssetsManager, stateSoundEnable);
 
     /*
      * Create the presentation layer for the captions.

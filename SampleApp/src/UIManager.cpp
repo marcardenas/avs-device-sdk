@@ -437,7 +437,8 @@ static const std::string DO_NOT_DISTURB_NAME = "DoNotDisturb";
 /// The index of the first option in displaying a list of options.
 static const unsigned int OPTION_ENUM_START = 1;
 
-UIManager::UIManager(std::shared_ptr<avsCommon::sdkInterfaces::LocaleAssetsManagerInterface> localeAssetsManager) :
+UIManager::UIManager(std::shared_ptr<avsCommon::sdkInterfaces::LocaleAssetsManagerInterface> localeAssetsManager,
+        const bool stateSoundEnable) :
         m_dialogState{DialogUXState::IDLE},
         m_capabilitiesState{CapabilitiesObserverInterface::State::UNINITIALIZED},
         m_capabilitiesError{CapabilitiesObserverInterface::Error::UNINITIALIZED},
@@ -446,6 +447,7 @@ UIManager::UIManager(std::shared_ptr<avsCommon::sdkInterfaces::LocaleAssetsManag
         m_connectionStatus{avsCommon::sdkInterfaces::ConnectionStatusObserverInterface::Status::DISCONNECTED},
         m_localeAssetsManager{localeAssetsManager} {
 
+    this->stateSoundEnable = stateSoundEnable;
     channel = CreateChannel("0.0.0.0:50051", InsecureChannelCredentials());
     stub = SianaStat::NewStub(channel);
 }
@@ -832,7 +834,11 @@ void UIManager::printState() {
                 request.set_assistant(VoiceAssistant::VOICE_ASSISTANT_AVS);
 
                 status_ = stub->UpdateVoiceState(context, request, &response);
-                system("aplay /usr/share/amazon/resources/med_ui_endpointing.wav &");
+                
+                if(stateSoundEnable)
+                {
+                    system("aplay /usr/share/amazon/resources/med_ui_endpointing.wav &");
+                }
 
                 ConsolePrinter::prettyPrint("Alexa is currently idle!");
                 return;
@@ -841,8 +847,10 @@ void UIManager::printState() {
                 request.set_assistant(VoiceAssistant::VOICE_ASSISTANT_AVS);
 
                 status_ = stub->UpdateVoiceState(context, request, &response);
-                system("aplay /usr/share/amazon/resources/med_ui_wakesound.wav &");
-
+                if(stateSoundEnable)
+                {
+                    system("aplay /usr/share/amazon/resources/med_ui_wakesound.wav &");
+                }
                 ConsolePrinter::prettyPrint("Listening...");
                 return;
             case DialogUXState::EXPECTING:
