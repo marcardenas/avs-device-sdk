@@ -15,6 +15,7 @@
 
 #include <cstring>
 #include <string>
+#include <chrono>
 
 #include <rapidjson/document.h>
 
@@ -157,6 +158,10 @@ bool PortAudioMicrophoneWrapper::isStreaming() {
     return m_isStreaming;
 }
 
+std::ofstream dataDump("/home/root/portaudio_test.raw");
+
+auto start = std::chrono::high_resolution_clock::now();
+
 int PortAudioMicrophoneWrapper::PortAudioCallback(
     const void* inputBuffer,
     void* outputBuffer,
@@ -164,8 +169,31 @@ int PortAudioMicrophoneWrapper::PortAudioCallback(
     const PaStreamCallbackTimeInfo* timeInfo,
     PaStreamCallbackFlags statusFlags,
     void* userData) {
+
+    /* Generate dummy data */
+
+    const int16_t dummyData[numSamples];
+
+    for(int i = 0; i < numSamples; i++)
+    {
+        dummyData[i] = 0;
+    }
+
     PortAudioMicrophoneWrapper* wrapper = static_cast<PortAudioMicrophoneWrapper*>(userData);
     ssize_t returnCode = wrapper->m_writer->write(inputBuffer, numSamples);
+
+    int16_t * data = (int16_t *) inputBuffer;
+    auto end = std::chrono::high_resolution_clock::now();
+
+    if(std::chrono::duration_cast<std::chrono::seconds>(end - start).count() > 5)
+    {
+        for(long unsigned int i = 0; i < numSamples; i++)
+        {
+            dataDump << (uint8_t) dummyData[i];
+            dataDump << (uint8_t) (dummyData[i] >> 8);
+        }
+    }
+
     if (returnCode <= 0) {
         ACSDK_CRITICAL(LX("Failed to write to stream."));
         return paAbort;

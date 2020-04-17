@@ -18,6 +18,8 @@
 
 #include <mutex>
 #include <thread>
+#include <iostream>
+#include <fstream>
 
 #include <AVSCommon/AVS/AudioInputStream.h>
 
@@ -122,6 +124,7 @@ private:
      * Whether the microphone is currently streaming.
      */
     bool m_isStreaming;
+
 };
 
 }  // namespace sampleApp

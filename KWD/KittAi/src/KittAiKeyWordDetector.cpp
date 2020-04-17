@@ -96,7 +96,7 @@ std::unique_ptr<KittAiKeyWordDetector> KittAiKeyWordDetector::create(
     if (!detector->init(audioFormat)) {
         ACSDK_ERROR(LX("createFailed").d("reason", "initDetectorFailed"));
         return nullptr;
-    }
+    }    
     return detector;
 }
 
@@ -137,6 +137,10 @@ KittAiKeyWordDetector::KittAiKeyWordDetector(
     m_kittAiEngine->SetSensitivity(sensitivities.str().c_str());
     m_kittAiEngine->SetAudioGain(audioGain);
     m_kittAiEngine->ApplyFrontend(applyFrontEnd);
+    
+    std::cout << "OPENING DUMP FILE" << std::endl;
+
+    dataDump.open("/home/root/sds_out.raw");
 }
 
 bool KittAiKeyWordDetector::init(avsCommon::utils::AudioFormat audioFormat) {
@@ -192,10 +196,13 @@ bool KittAiKeyWordDetector::isAudioFormatCompatibleWithKittAi(avsCommon::utils::
     return true;
 }
 
+auto start = std::chrono::high_resolution_clock::now();
+
 void KittAiKeyWordDetector::detectionLoop() {
     notifyKeyWordDetectorStateObservers(KeyWordDetectorStateObserverInterface::KeyWordDetectorState::ACTIVE);
     int16_t audioDataToPush[m_maxSamplesPerPush];
     ssize_t wordsRead;
+    
     while (!m_isShuttingDown) {
         bool didErrorOccur;
         wordsRead = readFromStream(
@@ -203,6 +210,15 @@ void KittAiKeyWordDetector::detectionLoop() {
         if (didErrorOccur) {
             break;
         } else if (wordsRead > 0) {
+            auto end = std::chrono::high_resolution_clock::now();
+            if(std::chrono::duration_cast<std::chrono::seconds>(end - start).count() > 5)
+            {
+                for(int16_t data : audioDataToPush)
+                {
+                    dataDump << (uint8_t) (data);
+                    dataDump << (uint8_t) (data >> 8);
+                }
+            }
             // Words were successfully read.
             notifyKeyWordDetectorStateObservers(KeyWordDetectorStateObserverInterface::KeyWordDetectorState::ACTIVE);
             int detectionResult = m_kittAiEngine->RunDetection(audioDataToPush, wordsRead);

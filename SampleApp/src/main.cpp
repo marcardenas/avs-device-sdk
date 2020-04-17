@@ -19,6 +19,7 @@
 
 #include <cstdlib>
 #include <string>
+#include <fstream>
 
 using namespace alexaClientSDK::sampleApp;
 
@@ -50,6 +51,11 @@ bool usesOptStyleArgs(int argc, char* argv[]) {
  * @return @c EXIT_FAILURE if the program failed to initialize correctly, else @c EXIT_SUCCESS.
  */
 int main(int argc, char* argv[]) {
+
+    std::ifstream file("/usr/share/mpvoice.avs/database/cblAuthDelegate.db");
+
+    if(!file.good()) return -1;
+
     std::vector<std::string> configFiles;
     std::string pathToKWDInputFolder;
     std::string logLevel;
@@ -99,7 +105,7 @@ int main(int argc, char* argv[]) {
         }
     } else {
 #if defined(KWD_KITTAI) || defined(KWD_SENSORY)
-        if (argc < 5) {
+        if (argc < 6) {
             ConsolePrinter::simplePrint(
                 "USAGE: " + std::string(argv[0]) +
                 " <path_to_AlexaClientSDKConfig.json> <path_to_inputs_folder> <sensitivity> <gain> <state_sound_enable> [log_level]");

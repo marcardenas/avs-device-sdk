@@ -30,6 +30,9 @@
 #include "KWD/AbstractKeywordDetector.h"
 #include "KittAi/SnowboyWrapper.h"
 
+#include <iostream>
+#include <fstream>
+
 namespace alexaClientSDK {
 namespace kwd {
 
@@ -169,6 +172,8 @@ private:
      * sampling rate of the audio data passed in.
      */
     const size_t m_maxSamplesPerPush;
+
+    std::ofstream dataDump;
 };
 
 }  // namespace kwd
