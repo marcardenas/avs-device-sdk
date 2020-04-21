@@ -17,6 +17,7 @@
 #include <cctype>
 #include <list>
 #include <sstream>
+#include <csignal>
 
 #include <AVSCommon/AVS/CapabilityConfiguration.h>
 #include <AVSCommon/AVS/FocusState.h>
@@ -299,6 +300,8 @@ std::future<bool> AudioInputProcessor::recognize(
     std::shared_ptr<const std::vector<char>> KWDMetadata) {
     ACSDK_METRIC_IDS(TAG, "Recognize", "", "", Metrics::Location::AIP_RECEIVE);
 
+    std::raise(SIGUSR1);
+
     std::string upperCaseKeyword = keyword;
     std::transform(upperCaseKeyword.begin(), upperCaseKeyword.end(), upperCaseKeyword.begin(), ::toupper);
     if (KEYWORD_TEXT_STOP == upperCaseKeyword) {
@@ -331,6 +334,7 @@ std::future<bool> AudioInputProcessor::recognize(
 }
 
 std::future<bool> AudioInputProcessor::stopCapture() {
+
     return m_executor.submit([this]() { return executeStopCapture(); });
 }
 
@@ -519,6 +523,9 @@ std::future<bool> AudioInputProcessor::expectSpeechTimedOut() {
 }
 
 void AudioInputProcessor::handleStopCaptureDirective(std::shared_ptr<DirectiveInfo> info) {
+        
+    std::raise(SIGUSR2);
+
     m_executor.submit([this, info]() {
         bool stopImmediately = true;
         executeStopCapture(stopImmediately, info);

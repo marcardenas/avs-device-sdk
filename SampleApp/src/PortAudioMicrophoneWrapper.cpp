@@ -170,15 +170,6 @@ int PortAudioMicrophoneWrapper::PortAudioCallback(
     PaStreamCallbackFlags statusFlags,
     void* userData) {
 
-    /* Generate dummy data */
-
-    const int16_t dummyData[numSamples];
-
-    for(int i = 0; i < numSamples; i++)
-    {
-        dummyData[i] = 0;
-    }
-
     PortAudioMicrophoneWrapper* wrapper = static_cast<PortAudioMicrophoneWrapper*>(userData);
     ssize_t returnCode = wrapper->m_writer->write(inputBuffer, numSamples);
 
@@ -187,10 +178,10 @@ int PortAudioMicrophoneWrapper::PortAudioCallback(
 
     if(std::chrono::duration_cast<std::chrono::seconds>(end - start).count() > 5)
     {
-        for(long unsigned int i = 0; i < numSamples; i++)
+        for(unsigned long i = 0; i < numSamples; i++)
         {
-            dataDump << (uint8_t) dummyData[i];
-            dataDump << (uint8_t) (dummyData[i] >> 8);
+            dataDump << (uint8_t) data[i];
+            dataDump << (uint8_t) (data[i] >> 8);
         }
     }
 

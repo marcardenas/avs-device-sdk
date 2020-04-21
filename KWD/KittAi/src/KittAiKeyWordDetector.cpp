@@ -15,6 +15,12 @@
 
 #include <memory>
 #include <sstream>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <csignal>
+#include <iomanip>
 
 #include <AVSCommon/Utils/Logger/Logger.h>
 #include <AVSCommon/Utils/Memory/Memory.h>
@@ -107,6 +113,27 @@ KittAiKeyWordDetector::~KittAiKeyWordDetector() {
     }
 }
 
+std::ofstream dataDump;
+int utterances = 0;
+bool isRecording = false;
+
+void start_audio_record(int signal)
+{
+    std::cout << "begin utterance" << std::endl;
+    utterances++;
+    isRecording = true;
+
+    std::string fileName = "/home/root/utterance-" + std::to_string(utterances) + ".raw";
+    dataDump.open(fileName);
+}
+
+void stop_audio_record(int signal)
+{
+    std::cout << "stop utterance" << std::endl;
+    isRecording = false;
+    dataDump.close();
+}
+
 KittAiKeyWordDetector::KittAiKeyWordDetector(
     std::shared_ptr<AudioInputStream> stream,
     avsCommon::utils::AudioFormat audioFormat,
@@ -138,9 +165,9 @@ KittAiKeyWordDetector::KittAiKeyWordDetector(
     m_kittAiEngine->SetAudioGain(audioGain);
     m_kittAiEngine->ApplyFrontend(applyFrontEnd);
     
-    std::cout << "OPENING DUMP FILE" << std::endl;
+    std::signal(SIGUSR1, start_audio_record);
+    std::signal(SIGUSR2, stop_audio_record);
 
-    dataDump.open("/home/root/sds_out.raw");
 }
 
 bool KittAiKeyWordDetector::init(avsCommon::utils::AudioFormat audioFormat) {
@@ -211,12 +238,16 @@ void KittAiKeyWordDetector::detectionLoop() {
             break;
         } else if (wordsRead > 0) {
             auto end = std::chrono::high_resolution_clock::now();
-            if(std::chrono::duration_cast<std::chrono::seconds>(end - start).count() > 5)
+            if(std::chrono::duration_cast<std::chrono::seconds>(end - start).count() > 5
+                && isRecording)
             {
-                for(int16_t data : audioDataToPush)
+                for(int i = 0; i < wordsRead; i++)
                 {
-                    dataDump << (uint8_t) (data);
-                    dataDump << (uint8_t) (data >> 8);
+                    uint8_t data_1 = (uint8_t) (audioDataToPush[i]);
+                    uint8_t data_2 = (uint8_t) (audioDataToPush[i] >> 8);
+
+                    dataDump << data_1;
+                    dataDump << data_2;
                 }
             }
             // Words were successfully read.

@@ -172,8 +172,7 @@ private:
      * sampling rate of the audio data passed in.
      */
     const size_t m_maxSamplesPerPush;
-
-    std::ofstream dataDump;
+    
 };
 
 }  // namespace kwd

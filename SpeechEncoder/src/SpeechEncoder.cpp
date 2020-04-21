@@ -127,6 +127,8 @@ void SpeechEncoder::encodeLoop(AudioInputStream::Index begin, AudioInputStream::
     bool done = false;
     bool readsFull = m_encoder->requiresFullyRead();
 
+    std::cout << "Codificando" << std::endl;
+
     std::shared_ptr<AudioInputStream::Reader> reader =
         m_inputStream->createReader(AudioInputStream::Reader::Policy::BLOCKING);
     size_t wordSize = reader->getWordSize();
@@ -147,6 +149,7 @@ void SpeechEncoder::encodeLoop(AudioInputStream::Index begin, AudioInputStream::
             m_maxFrameSize - currentRead,
             std::chrono::milliseconds(READ_TIMEOUT_MS));
         if (readResult > 0) {
+            
             currentRead += readResult;
             if (readsFull && (currentRead < m_maxFrameSize)) {
                 continue;
